@@ -1,3 +1,12 @@
+#![cfg_attr(debug_assertions, allow(dead_code, unused_imports))]
+
+mod color;
+mod vec3;
+
+use crate::vec3::vec3::Vec3;
+use crate::color::color::utils::write_color;
+use crate::color::color::Color;
+
 fn main() {
     // image
     let image_width = 256;
@@ -8,16 +17,14 @@ fn main() {
 
     for j in (0..(image_height - 1)).rev() {
         eprintln!("Scanlines remaining: {}", j);
-        for i in 0..image_width {
-            let r = (i as f64) / ((image_width - 1) as f64);
-            let g = (j as f64) / ((image_height - 1) as f64);
-            let b = 0.25;
+        for : in 0..image_width {
+            let pixel_color: Color  = Vec3::new(
+                (i as f64) / ((image_width - 1) as f64),
+                (j as f64) / ((image_height - 1) as f64), 
+                0.25
+            ) as Color;
 
-            let ir = (255.999 * r) as i32;
-            let ig = (255.999 * g) as i32;
-            let ib = (255.999 * b) as i32;
-
-            println!("{} {} {}", ir, ig, ib);
+            write_color(pixel_color);
         }
     }
 }
