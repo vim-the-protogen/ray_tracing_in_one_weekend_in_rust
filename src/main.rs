@@ -17,7 +17,7 @@ fn main() {
 
     for j in (0..(image_height - 1)).rev() {
         eprintln!("Scanlines remaining: {}", j);
-        for : in 0..image_width {
+        for i in 0..image_width {
             let pixel_color: Color  = Vec3::new(
                 (i as f64) / ((image_width - 1) as f64),
                 (j as f64) / ((image_height - 1) as f64), 
