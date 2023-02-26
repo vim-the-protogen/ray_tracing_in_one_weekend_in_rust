@@ -10,8 +10,8 @@ pub mod vec3 {
 
     impl Vec3 {
 
-        pub fn new(e0: f64, e1: f64, e2: f64) -> Vec3 {
-            Vec3 { e: [e0, e1, e2] }
+        pub fn new(e0: f64, e1: f64, e2: f64) -> Self {
+            Self { e: [e0, e1, e2] }
         }
 
         /// get the z coord
