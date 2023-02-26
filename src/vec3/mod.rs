@@ -3,7 +3,7 @@ use std::ops;
 use std::fmt;
 
 pub mod vec3 {
-    #[derive(Debug)]
+    #[derive(Copy,Clone, Debug)]
     pub struct Vec3 {
         e: [f64; 3],
     }

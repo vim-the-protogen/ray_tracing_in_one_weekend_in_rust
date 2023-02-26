@@ -1,4 +1,3 @@
-use std::io::{Error, Write};
 
 //mod vec3;
 pub mod color { 
