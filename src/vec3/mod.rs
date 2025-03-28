@@ -217,12 +217,14 @@ pub mod vec3 {
     }
 
     // matrix operations
+    /// Dot product of two vectors. Yields a scalar
     pub fn dot(rhs: Vec3, lhs: Vec3) -> f64 {
         lhs.e[0] * rhs.e[0] +
         lhs.e[1] * rhs.e[1] +
         lhs.e[2] * rhs.e[2]
     }
 
+    /// cross product of two vectors, yields a vector
     pub fn cross(rhs: Vec3, lhs: Vec3) -> Vec3 {
         Vec3 {
             e: [
@@ -233,6 +235,7 @@ pub mod vec3 {
         }
     }
 
+    /// calculatse the unit vector
     pub fn unit_vector(vec: Vec3) -> Vec3 {
         let len = vec.length();
         vec / len

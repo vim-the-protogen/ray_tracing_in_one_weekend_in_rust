@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["cross",""],["dot",""],["unit_vector",""]],"struct":[["Vec3",""]]});
