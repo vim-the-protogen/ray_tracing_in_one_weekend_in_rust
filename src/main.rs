@@ -3,33 +3,44 @@
 mod color;
 mod vec3;
 mod ray;
+mod hittable;
+mod sphere;
 
 use crate::vec3::vec3::*;
-use crate::color::color::utils::write_color;
-use crate::color::color::Color;
-use crate::ray::ray::Ray;
-use crate::ray::ray::Point3;
+use crate::color::color::{Color, utils::write_color};
+use crate::ray::ray::{Ray, Point3};
+use crate::sphere::sphere::Sphere;
 
-fn hit_sphere(center: Point3, radius: f64, r: Ray) -> bool {
-    let oc = r.origin() - center;
-    let a = dot(r.direction(), r.direction());
-    let b = 2.0 * dot(oc, r.direction());
+// checks to see if a sphere is hit by a ray
+// simplified because b = -2h and the dot product 
+fn hit_sphere(center: Point3, radius: f64, ray: Ray) -> f64 {
+    let oc = ray.origin() - center;
+    let a = dot(ray.direction(), ray.direction());
+    let half_b = dot(oc, ray.direction());
     let c = dot(oc, oc) - radius * radius;
-    let discriminant = b * b - 4.0 * a * c;
-    discriminant > 0.0
+    let discriminant = half_b * half_b - a * c;
+
+    if discriminant < 0.0 {
+        -1.0
+    } else {
+        (-half_b - discriminant.sqrt()) / a
+    }
 }
 
 // linearly blends white to blue depend on the heigt of the y coordinat
 // after scalin the ray direction to unit length
-fn ray_color(r: Ray) -> Color {
-    if hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, r) {
-        return Color::new(1.0, 0.0, 0.0)
-    }
+fn ray_color(ray: Ray) -> Color {
+    let mut t = hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, ray);
 
-    let unit_direction = unit_vector(r.direction());
-    let t = 0.5 * (unit_direction.y() + 1.0);
-    Color::new(1.0, 1.0, 1.0) * (1.0 - t) +
-        Color::new(0.5, 0.7, 1.0) * t
+    if t > 0.0 {
+        let n = unit_vector(ray.at(t) - Vec3::new(0.0, 0.0, -1.0));
+        Color::new(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0) * 0.5
+    } else {
+        let unit_direction = unit_vector(ray.direction());
+        t = 0.5 * (unit_direction.y() + 1.0);
+        (Color::new(1.0, 1.0, 1.0) * (1.0 - t)) +
+            (Color::new(0.5, 0.7, 1.0) * t)
+    }
 }
 
 fn main() {
