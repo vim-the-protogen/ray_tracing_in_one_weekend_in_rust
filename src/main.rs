@@ -51,31 +51,43 @@ fn main() {
     const IMAGE_HEIGHT : i64 = ((IMAGE_WIDTH as f64) / ASPECT_RATIO) as i64;
 
     // Camera
-    let viewport_height = 2.0;
-    let viewport_width = ASPECT_RATIO * viewport_height;
-    let focal_length = 1.0;
+    const VIEWPORT_HEIGHT : f64 = 2.0;
+    const VIEWPORT_WIDTH : f64 = ASPECT_RATIO * VIEWPORT_HEIGHT;
+    const FOCAL_LENGTH : f64 = 1.0;
 
     let origin = Point3::new(0.0, 0.0, 0.0);
-    let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, viewport_height, 0.0);
-    let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0.0, 0.0, focal_length);
+    let horizontal = Vec3::new(VIEWPORT_WIDTH, 0.0, 0.0);
+    let vertical = Vec3::new(0.0, VIEWPORT_HEIGHT, 0.0);
+    let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
 
     // render
     println!("P3\n {} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
 
-    const Y_COORDS : Range<i64> = 0..(IMAGE_HEIGHT - 1);
-    const X_COORDS : Range<i64> = 0..IMAGE_WIDTH;
-    let foo = | x, y | (x as f64, y as f64);
-    let pair_x_y = | y | X_COORDS.map(move | x | foo(x, y));
-    let x_pixel = | x : f64 | x / ((IMAGE_WIDTH - 1) as f64);
-    let y_pixel = | y : f64 | y / ((IMAGE_HEIGHT - 1) as f64);
-    let direction = | coord : (f64, f64) |  lower_left_corner + horizontal * coord.0 + vertical * coord.1 - origin;
+    // constant ranges encompassing each quanta of the image's
+    // axises
+    const Y_COORDS: Range<i64> = 0..(IMAGE_HEIGHT - 1);
+    const X_COORDS: Range<i64> = 0..IMAGE_WIDTH; 
 
-    let _ = Y_COORDS.rev()
-                    .flat_map(| x | pair_x_y(x))
-                    .map(| coord | (x_pixel(coord.0), y_pixel(coord.1)))
-                    .map(| coord | Ray::new(origin, direction(coord)))
-                    .map(| ray | ray_color(ray))
-                    .map(| pixel_color | write_color(pixel_color))
-                    .collect::<Vec<_>>();
+    // functions to create all x/y pairs of the image's coordinates
+    let map_to_axis = | p: f64, axis_size: i64| p / ((axis_size - 1) as f64);
+    let select_x = | coord: (f64, _) | map_to_axis(coord.0, IMAGE_WIDTH);
+    let select_y = | coord: (_, f64) | map_to_axis(coord.1, IMAGE_HEIGHT);
+    let select_coords = | y | X_COORDS.map(move | x | (x as f64, y as f64));
+
+    // functions for getting the direction of the ray at a particular pixel
+    let scale_horizontal = | coord: (f64, _) | (horizontal * coord.0) as Vec3;
+    let scale_vertical = | coord: (_, f64) | (vertical * coord.1) as Vec3;
+    let direction = | coord: (f64, f64) |   lower_left_corner
+                                          + scale_horizontal(coord)
+                                          + scale_vertical(coord)
+                                          - origin;
+
+    let coords = Y_COORDS.rev()
+                         .flat_map(select_coords)
+                         .map(| coord | (select_x(coord), select_y(coord)));
+
+    _ = coords.map(| coord | Ray::new(origin, direction(coord)))
+              .map(ray_color)
+              .map(write_color)
+              .collect::<Vec<_>>();
 }
