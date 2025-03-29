@@ -7,6 +7,7 @@ mod hittable;
 mod sphere;
 
 use crate::vec3::vec3::*;
+use std::ops::Range;
 use crate::color::color::{Color, utils::write_color};
 use crate::ray::ray::{Ray, Point3};
 use crate::sphere::sphere::Sphere;
@@ -45,36 +46,36 @@ fn ray_color(ray: Ray) -> Color {
 
 fn main() {
     // image
-    let aspect_ratio = 16.0 / 9.0;
-    let image_width = 400;
-    let image_height = ((image_width as f64) / aspect_ratio) as i64;
+    const ASPECT_RATIO : f64 = 16.0 / 9.0;
+    const IMAGE_WIDTH : i64 = 400;
+    const IMAGE_HEIGHT : i64 = ((IMAGE_WIDTH as f64) / ASPECT_RATIO) as i64;
 
     // Camera
     let viewport_height = 2.0;
-    let viewport_width = aspect_ratio * viewport_height;
+    let viewport_width = ASPECT_RATIO * viewport_height;
     let focal_length = 1.0;
 
     let origin = Point3::new(0.0, 0.0, 0.0);
     let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
     let vertical = Vec3::new(0.0, viewport_height, 0.0);
-    let lower_left_corner = origin - horizontal / 2.0 -
-        vertical / 2.0 - Vec3::new(0.0, 0.0, focal_length);
+    let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0.0, 0.0, focal_length);
 
     // render
-    println!("P3\n {} {}\n255", image_width, image_height);
+    println!("P3\n {} {}\n255", IMAGE_WIDTH, IMAGE_HEIGHT);
 
-    for j in (0..(image_height - 1)).rev() {
-        eprintln!("Scanlines remaining: {}", j);
-        for i in 0..image_width {
-                
-            let u = (i as f64) / ((image_width - 1) as f64);
-            let v = (j as f64) / ((image_height - 1) as f64); 
+    const Y_COORDS : Range<i64> = 0..(IMAGE_HEIGHT - 1);
+    const X_COORDS : Range<i64> = 0..IMAGE_WIDTH;
+    let foo = | x, y | (x as f64, y as f64);
+    let pair_x_y = | y | X_COORDS.map(move | x | foo(x, y));
+    let x_pixel = | x : f64 | x / ((IMAGE_WIDTH - 1) as f64);
+    let y_pixel = | y : f64 | y / ((IMAGE_HEIGHT - 1) as f64);
+    let direction = | coord : (f64, f64) |  lower_left_corner + horizontal * coord.0 + vertical * coord.1 - origin;
 
-            let r = Ray::new(origin, 
-                lower_left_corner + horizontal * u + vertical * v - origin);
-
-            let pixel_color: Color = ray_color(r);
-            write_color(pixel_color);
-        }
-    }
+    let _ = Y_COORDS.rev()
+                    .flat_map(| x | pair_x_y(x))
+                    .map(| coord | (x_pixel(coord.0), y_pixel(coord.1)))
+                    .map(| coord | Ray::new(origin, direction(coord)))
+                    .map(| ray | ray_color(ray))
+                    .map(| pixel_color | write_color(pixel_color))
+                    .collect::<Vec<_>>();
 }
