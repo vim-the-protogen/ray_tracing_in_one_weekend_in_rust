@@ -82,12 +82,10 @@ fn main() {
                                           + scale_vertical(coord)
                                           - origin;
 
-    let coords = Y_COORDS.rev()
-                         .flat_map(select_coords)
-                         .map(| coord | (select_x(coord), select_y(coord)));
-
-    _ = coords.map(| coord | Ray::new(origin, direction(coord)))
-              .map(ray_color)
-              .map(write_color)
-              .collect::<Vec<_>>();
+    Y_COORDS.rev()
+            .flat_map(select_coords)
+            .map(| coord | (select_x(coord), select_y(coord)))
+            .map(| coord | Ray::new(origin, direction(coord)))
+            .map(ray_color)
+            .for_each(write_color);
 }
